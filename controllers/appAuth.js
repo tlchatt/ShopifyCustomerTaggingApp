@@ -4,7 +4,6 @@ const app = express();
 const nonce = require('nonce')();
 const querystring = require('querystring');
 var shopifyAPI = require('shopify-node-api');
-var React = require('react');
 const request = require('request-promise');
 const bodyParser = require('body-parser');
 const axios = require('axios');
@@ -87,7 +86,7 @@ app.get('/tag/finish_auth', function(req, res){
 
 
 app.listen(3004, () => {
-  console.log('Example app listening on port 3001!');
+  console.log('Example app listening on port 3004!');
 });
 
 
