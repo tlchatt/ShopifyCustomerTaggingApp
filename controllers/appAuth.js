@@ -27,7 +27,7 @@ var shopifyAPI = require('shopify-node-api');
  * Shopify Auth Section
  *  */
 
-app.get('/auth', (req, res) => {
+app.get('/tag/auth', (req, res) => {
 
 
   const shop = req.query.shop;
@@ -85,9 +85,6 @@ app.get('/tag/finish_auth', function(req, res){
   });
 
 
-app.listen(3004, () => {
-  console.log('Example app listening on port 3004!');
-});
 
 
 
