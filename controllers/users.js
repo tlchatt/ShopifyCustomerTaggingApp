@@ -8,7 +8,6 @@
   const nonce = require('nonce')();
   const querystring = require('querystring');
   var shopifyAPI = require('shopify-node-api');
-  var React = require('react');
   const request = require('request-promise');
   const bodyParser = require('body-parser');
   const axios = require('axios');
