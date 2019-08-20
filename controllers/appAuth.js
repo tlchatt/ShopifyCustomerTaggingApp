@@ -26,7 +26,7 @@ var shopifyAPI = require('shopify-node-api');
  *  */
 
 app.get('/', (req, res) => {
-
+console.log(req)
 
   const shop = req.query.shop;
   if (shop) {
