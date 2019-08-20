@@ -68,7 +68,7 @@ router.get('/finish_auth', function(req, res){
 
 //Ads Prospect 2 Tag after customer submission. 
 router.get('/switchTag', (req, res) => {
-
+console.log("/switchtag")
 var tags = undefined;
 var customerID = req.query.id;
 function getCustomerTags(ID, callback){
