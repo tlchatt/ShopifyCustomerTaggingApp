@@ -26,7 +26,7 @@ var shopifyAPI = require('shopify-node-api');
  *  */
 
 router.get('/', (req, res) => {
-console.log(req)
+console.log("triggered")
 
   const shop = req.query.shop;
   if (shop) {
