@@ -11,8 +11,8 @@ var shopifyAPI = require('shopify-node-api');
 const request = require('request-promise');
 const bodyParser = require('body-parser');
 var non = nonce();
-const forwardingAddress = "https://technologic.ngrok.io";
-const shopName = 'straydogdesigns.myshopify.com';
+const forwardingAddress = "https://technologic.ga/appauth";
+const shopName = 'rustic-house-dummy-store.myshopify.com';
 router.use(bodyParser.json());
 router.use(bodyParser.urlencoded({
   extended: true,
@@ -28,7 +28,7 @@ router.get('/', (req, res) => {
     shop: shopName, // MYSHOP.myshopify.com
     shopify_api_key: process.env.SHOPIFY_API_KEY, // Your API key
     shopify_shared_secret: process.env.SHOPIFY_API_SECRET, // Your Shared Secret
-    shopify_scope: 'read_customers,write_customers,read_orders,write_orders,read_draft_orders,write_draft_orders,read_script_tags,write_script_tags,read_checkouts,write_checkouts',
+    shopify_scope: 'read_customers,write_customers',
     redirect_uri:  forwardingAddress + '/finish_auth',
     nonce: non.toString() // you must provide a randomly selected value unique for each authorization request
   });
@@ -42,7 +42,7 @@ router.get('/finish_auth', function(req, res){
     shop: shopName, // MYSHOP.myshopify.com
     shopify_api_key: process.env.SHOPIFY_API_KEY, // Your API key
     shopify_shared_secret: process.env.SHOPIFY_API_SECRET, // Your Shared Secret
-    shopify_scope: 'read_customers,write_customers,read_orders,write_orders,read_draft_orders,write_draft_orders,read_script_tags,write_script_tags,read_checkouts,write_checkouts',
+    shopify_scope: 'read_customers,write_customers',
     nonce:non.toString()
   }), 
     query_params = req.query;
