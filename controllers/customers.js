@@ -11,7 +11,7 @@ var shopifyAPI = require('shopify-node-api');
 const request = require('request-promise');
 const bodyParser = require('body-parser');
 var non = nonce();
-const forwardingAddress = "https://technologic.ga/customers";
+const forwardingAddress = "https://technologic.ga:3004/customers";
 const shopName = 'rustic-house-dummy-store.myshopify.com';
 router.use(bodyParser.json());
 router.use(bodyParser.urlencoded({
