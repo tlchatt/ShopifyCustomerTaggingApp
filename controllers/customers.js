@@ -52,8 +52,9 @@ router.get('/finish_auth', function(req, res){
     // Otherwise err will be non-null.
     // The module will automatically update your config with the new access token
     // It is also available here as data['access_token']
-    //console.log(data);
-    //console.log(err);
+    console.log(data);
+    console.log(data['access_token']);
+    console.log(err);
   });
 });
 
