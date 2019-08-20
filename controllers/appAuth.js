@@ -25,7 +25,7 @@ var shopifyAPI = require('shopify-node-api');
  * Shopify Auth Section
  *  */
 
-app.get('/', (req, res) => {
+router.get('/', (req, res) => {
 console.log(req)
 
   const shop = req.query.shop;
@@ -51,7 +51,7 @@ var Shopify = new shopifyAPI({
 
 
 });
-app.get('/finish_auth', function(req, res){
+router.get('/finish_auth', function(req, res){
 
 /**
   const shop = req.query.shop;
