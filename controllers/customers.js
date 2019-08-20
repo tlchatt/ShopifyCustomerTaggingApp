@@ -1,9 +1,8 @@
 
   var express = require('express')
-  , router = express.Router()
+  , router = express.Router();
 
-
-require('dotenv').config({ path: '../' })
+  const dotenv = require('dotenv').config();
 //const express = require('express');
 const app = express();
 const nonce = require('nonce')();
