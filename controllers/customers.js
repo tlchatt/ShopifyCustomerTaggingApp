@@ -66,7 +66,7 @@ router.get('/finish_auth', function(req, res){
 
 
 //Ads Prospect 2 Tag after customer submission. 
-router.get('/removeProspect', (req, res) => {
+router.get('/switchTag', (req, res) => {
 
 var tags = undefined;
 var customerID = req.query.id;
@@ -86,9 +86,9 @@ function getCustomerTags(ID, callback){
     function removeOneTimeTags() {
       tagsObject = tags.split(",");
      for(var i = tagsObject.length -1; i >= 0 ; i--){
-        if(tagsObject[i].includes("Prospect1")){
+        if(tagsObject[i].includes("Wholesale-Accnt-Created")){
           tagsObject.splice(i, 1);
-          tagsObject.push('Prospect2');
+          tagsObject.push('Wholesale-Accnt-Appld');
         }
     } 
     var put_data = {
@@ -114,56 +114,6 @@ console.log(put_data);
     }, 1000);
    
 });  
-
-
-//Responds to order created Webhook and currently remove's one time tags from Customer. 
-router.post('/order_created', (req, res) => {
-res.send('OK');
-var tags = undefined;
-console.log(req.body);
-console.log(req.body.line_items[0].properties);
-console.log(req.body.line_items[1].properties);
-console.log(req.body.line_items[2].properties);
-var customerID = req.body.customer.id;
-function getCustomerTags(ID, callback){
-
-      var Shopify = new shopifyAPI(config);
-      
-     Shopify.get('/admin/customers/' + ID + '.json', function(err, data, headers){
-       if(err){
-         console.log(err);
-         return;}
-       else{
-        tags = data.customer.tags;
-        callback();}
-      });
-    }
-
-    function removeOneTimeTags() {
-      tagsObject = tags.split(",");
-     for(var i = tagsObject.length -1; i >= 0 ; i--){
-        if(tagsObject[i].includes("FreeShippingCoupon")){
-          tagsObject.splice(i, 1);
-        }
-    } 
-    var put_data = {
-      "customer": {
-        "tags": "tags"
-      }
-    }
-
-    put_data.customer.tags = tagsObject;
-    
-console.log(put_data);
-    var Shopify = new shopifyAPI(config);
-
-    Shopify.put('/admin/customers/' + customerID + '.json',  put_data, function(err, data, headers){
-     });
-    }
-    console.log('remove free shipping tag for customer ID ' + req.body.customer.id);
-    getCustomerTags(customerID,removeOneTimeTags);
-});
-
 
 
 
