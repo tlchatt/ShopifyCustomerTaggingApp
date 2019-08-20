@@ -25,6 +25,7 @@ const config ={
   access_token: process.env.SHOPIFY_API_TOKEN, //permanent token
 }
 router.get('/', (req, res) => {
+  console.log(rocess.env.SHOPIFY_API_KEY)
   var Shopify = new shopifyAPI({
     shop: shopName, // MYSHOP.myshopify.com
     shopify_api_key: process.env.SHOPIFY_API_KEY, // Your API key
