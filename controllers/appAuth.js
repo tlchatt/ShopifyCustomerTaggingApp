@@ -1,12 +1,12 @@
 
-  var express = require('express')
+var express = require('express')
   , router = express.Router()
 const app = express();
 const nonce = require('nonce')();
 var shopifyAPI = require('shopify-node-api');
 const bodyParser = require('body-parser');
 var non = nonce();
-const forwardingAddress = "https://technologic.ga/tag";
+const forwardingAddress = "https://technologic.ga/appAuth/finish_auth";
 const shopName = 'rustic-house-dummy-store.myshopify.com';
 const config ={
   shopify_api_key: process.env.SHOPIFY_API_KEY, // Your API key
@@ -25,7 +25,7 @@ var shopifyAPI = require('shopify-node-api');
  * Shopify Auth Section
  *  */
 
-app.get('/tag/auth', (req, res) => {
+app.get('/', (req, res) => {
 
 
   const shop = req.query.shop;
@@ -36,7 +36,7 @@ var Shopify = new shopifyAPI({
   shopify_api_key: process.env.SHOPIFY_API_KEY, // Your API key
   shopify_shared_secret: process.env.SHOPIFY_API_KEY, // Your Shared Secret
   shopify_scope: 'read_customers,write_customers',
-  redirect_uri: forwardingAddress + '/finish_auth',
+  redirect_uri: forwardingAddress,
   nonce:non.toString() // you must provide a randomly selected value unique for each authorization request
 });
   
@@ -51,7 +51,7 @@ var Shopify = new shopifyAPI({
 
 
 });
-app.get('/tag/finish_auth', function(req, res){
+app.get('/finish_auth', function(req, res){
 
 /**
   const shop = req.query.shop;
