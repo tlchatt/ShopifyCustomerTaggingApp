@@ -110,7 +110,7 @@ console.log(put_data);
     getCustomerTags(customerID,removeOneTimeTags);
  
     setTimeout(function() {
-      redirectURL = 'https://straydogdesigns.com/account';
+      redirectURL = 'https://rustic-house-dummy-store.myshopify.com/account';
       res.redirect(redirectURL);
     }, 1000);
    
