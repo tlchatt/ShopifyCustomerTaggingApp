@@ -77,7 +77,7 @@ function getCustomerTags(callback){
 
       var Shopify = new shopifyAPI(config);
       
-    Shopify.get('/admin/api/2021-01/products.json' + ID + '.json', function(err, data, headers){
+    Shopify.get('/admin/api/2021-01/products' + '.json', function(err, data, headers){
        if(err){
          console.log(err);
          return;}
