@@ -88,7 +88,7 @@ function getCustomerTags(callback){
       });
     }
     function logProduct(products) {
-        console.log(products)
+        console.log(products[0])
 
 
     }
