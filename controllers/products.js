@@ -31,7 +31,7 @@ router.get('/', (req, res) => {
     shop: shopName, // MYSHOP.myshopify.com
     shopify_api_key: process.env.SHOPIFY_API_KEY, // Your API key
     shopify_shared_secret: process.env.SHOPIFY_API_SECRET, // Your Shared Secret
-      shopify_scope: 'read_customers,write_customers,read_inventory,write_inventory',
+      shopify_scope: 'read_products, write_products,read_customers,write_customers,read_inventory,write_inventory',
     redirect_uri:  forwardingAddress + '/finish_auth',
     nonce: non.toString() // you must provide a randomly selected value unique for each authorization request
   });
@@ -39,13 +39,13 @@ router.get('/', (req, res) => {
   // Assuming you are using the express framework
   // you can redirect the user automatically like so
   res.redirect(auth_url);
-});
+});read_products, write_products
 router.get('/finish_auth', function(req, res){
   var Shopify = new shopifyAPI({
     shop: shopName, // MYSHOP.myshopify.com
     shopify_api_key: process.env.SHOPIFY_API_KEY, // Your API key
     shopify_shared_secret: process.env.SHOPIFY_API_SECRET, // Your Shared Secret
-      shopify_scope: 'read_customers,write_customers,read_inventory,write_inventory',
+      shopify_scope: 'read_products, write_products,read_customers,write_customers,read_inventory,write_inventory',
     nonce:non.toString()
   }), 
     query_params = req.query;
