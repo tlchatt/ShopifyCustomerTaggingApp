@@ -69,8 +69,8 @@ router.get('/finish_auth', function(req, res){
 
 
 //Ads Prospect 2 Tag after customer submission. 
-router.get('/get_all_prodcuts', (req, res) => {
-console.log("/get_all_prodct")
+router.get('/get_all_products', (req, res) => {
+    console.log("/get_all_products")
 
 
 function getCustomerTags(callback){
@@ -94,10 +94,6 @@ function getCustomerTags(callback){
 
     getCustomerTags( logProduct);
  
-    setTimeout(function() {
-      redirectURL = 'https://rustic-house-dummy-store.myshopify.com/account';
-      res.redirect(redirectURL);
-    }, 1000);
    
 });  
 
