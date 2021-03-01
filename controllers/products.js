@@ -39,7 +39,7 @@ router.get('/', (req, res) => {
   // Assuming you are using the express framework
   // you can redirect the user automatically like so
   res.redirect(auth_url);
-});read_products, write_products
+});
 router.get('/finish_auth', function(req, res){
     console.log('finish auth')
   var Shopify = new shopifyAPI({
