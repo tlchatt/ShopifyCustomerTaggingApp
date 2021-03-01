@@ -24,7 +24,9 @@ const config ={
   access_token: process.env.SHOPIFY_API_TOKEN, //permanent token
 }
 router.get('/', (req, res) => {
+    console.log('products runnign')
   console.log(process.env.SHOPIFY_API_KEY)
+    console.log(forwardingAddress + '/finish_auth')
   var Shopify = new shopifyAPI({
     shop: shopName, // MYSHOP.myshopify.com
     shopify_api_key: process.env.SHOPIFY_API_KEY, // Your API key
