@@ -25,8 +25,8 @@ const config ={
 }
 router.get('/', (req, res) => {
     console.log('products runnign')
-  console.log(process.env.SHOPIFY_API_KEY)
-    console.log(forwardingAddress + '/finish_auth')
+
+  
   var Shopify = new shopifyAPI({
     shop: shopName, // MYSHOP.myshopify.com
     shopify_api_key: process.env.SHOPIFY_API_KEY, // Your API key
@@ -41,6 +41,7 @@ router.get('/', (req, res) => {
   res.redirect(auth_url);
 });read_products, write_products
 router.get('/finish_auth', function(req, res){
+    console.log('finish auth')
   var Shopify = new shopifyAPI({
     shop: shopName, // MYSHOP.myshopify.com
     shopify_api_key: process.env.SHOPIFY_API_KEY, // Your API key
