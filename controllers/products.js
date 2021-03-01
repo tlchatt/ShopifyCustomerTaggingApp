@@ -1,8 +1,8 @@
 
   var express = require('express')
-  , router = express.Router()
+  , router = express.Router();
 
-const dotenv = require('dotenv').config();
+  const dotenv = require('dotenv').config();
 //const express = require('express');
 const app = express();
 const nonce = require('nonce')();
@@ -11,7 +11,7 @@ var shopifyAPI = require('shopify-node-api');
 const request = require('request-promise');
 const bodyParser = require('body-parser');
 var non = nonce();
-const forwardingAddress = "https://technologic.ga/appauth";
+const forwardingAddress = "http://technologic.ga:3004/products";
 const shopName = 'rustic-house-dummy-store.myshopify.com';
 router.use(bodyParser.json());
 router.use(bodyParser.urlencoded({
@@ -24,11 +24,12 @@ const config ={
   access_token: process.env.SHOPIFY_API_TOKEN, //permanent token
 }
 router.get('/', (req, res) => {
+  console.log(process.env.SHOPIFY_API_KEY)
   var Shopify = new shopifyAPI({
     shop: shopName, // MYSHOP.myshopify.com
     shopify_api_key: process.env.SHOPIFY_API_KEY, // Your API key
     shopify_shared_secret: process.env.SHOPIFY_API_SECRET, // Your Shared Secret
-    shopify_scope: 'read_customers,write_customers,read_inventory,write_inventory',
+      shopify_scope: 'read_inventory,write_inventory',
     redirect_uri:  forwardingAddress + '/finish_auth',
     nonce: non.toString() // you must provide a randomly selected value unique for each authorization request
   });
@@ -42,7 +43,7 @@ router.get('/finish_auth', function(req, res){
     shop: shopName, // MYSHOP.myshopify.com
     shopify_api_key: process.env.SHOPIFY_API_KEY, // Your API key
     shopify_shared_secret: process.env.SHOPIFY_API_SECRET, // Your Shared Secret
-    shopify_scope: 'read_customers,write_customers,read_inventory,write_inventory',
+      shopify_scope: 'read_inventory,write_inventory',
     nonce:non.toString()
   }), 
     query_params = req.query;
@@ -51,8 +52,9 @@ router.get('/finish_auth', function(req, res){
     // Otherwise err will be non-null.
     // The module will automatically update your config with the new access token
     // It is also available here as data['access_token']
-    //console.log(data);
-    //console.log(err);
+    console.log(data);
+    console.log(data['access_token']);
+    console.log(err);
   });
 });
 
@@ -65,8 +67,8 @@ router.get('/finish_auth', function(req, res){
 
 
 //Ads Prospect 2 Tag after customer submission. 
-router.get('/removeProspect', (req, res) => {
-
+router.get('/switchTag', (req, res) => {
+console.log("/switchtag")
 var tags = undefined;
 var customerID = req.query.id;
 function getCustomerTags(ID, callback){
@@ -85,9 +87,9 @@ function getCustomerTags(ID, callback){
     function removeOneTimeTags() {
       tagsObject = tags.split(",");
      for(var i = tagsObject.length -1; i >= 0 ; i--){
-        if(tagsObject[i].includes("Prospect1")){
+        if(tagsObject[i].includes("Wholesale-Accnt-Created")){
           tagsObject.splice(i, 1);
-          tagsObject.push('Prospect2');
+          tagsObject.push('Wholesale-Accnt-Appld');
         }
     } 
     var put_data = {
@@ -108,61 +110,11 @@ console.log(put_data);
     getCustomerTags(customerID,removeOneTimeTags);
  
     setTimeout(function() {
-      redirectURL = 'https://straydogdesigns.com/account';
+      redirectURL = 'https://rustic-house-dummy-store.myshopify.com/account';
       res.redirect(redirectURL);
     }, 1000);
    
 });  
-
-
-//Responds to order created Webhook and currently remove's one time tags from Customer. 
-router.post('/order_created', (req, res) => {
-res.send('OK');
-var tags = undefined;
-console.log(req.body);
-console.log(req.body.line_items[0].properties);
-console.log(req.body.line_items[1].properties);
-console.log(req.body.line_items[2].properties);
-var customerID = req.body.customer.id;
-function getCustomerTags(ID, callback){
-
-      var Shopify = new shopifyAPI(config);
-      
-     Shopify.get('/admin/customers/' + ID + '.json', function(err, data, headers){
-       if(err){
-         console.log(err);
-         return;}
-       else{
-        tags = data.customer.tags;
-        callback();}
-      });
-    }
-
-    function removeOneTimeTags() {
-      tagsObject = tags.split(",");
-     for(var i = tagsObject.length -1; i >= 0 ; i--){
-        if(tagsObject[i].includes("FreeShippingCoupon")){
-          tagsObject.splice(i, 1);
-        }
-    } 
-    var put_data = {
-      "customer": {
-        "tags": "tags"
-      }
-    }
-
-    put_data.customer.tags = tagsObject;
-    
-console.log(put_data);
-    var Shopify = new shopifyAPI(config);
-
-    Shopify.put('/admin/customers/' + customerID + '.json',  put_data, function(err, data, headers){
-     });
-    }
-    console.log('remove free shipping tag for customer ID ' + req.body.customer.id);
-    getCustomerTags(customerID,removeOneTimeTags);
-});
-
 
 
 
