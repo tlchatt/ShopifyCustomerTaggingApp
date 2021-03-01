@@ -69,47 +69,30 @@ router.get('/finish_auth', function(req, res){
 
 
 //Ads Prospect 2 Tag after customer submission. 
-router.get('/switchTag', (req, res) => {
-console.log("/switchtag")
-var tags = undefined;
-var customerID = req.query.id;
-function getCustomerTags(ID, callback){
+router.get('/get_all_prodcuts', (req, res) => {
+console.log("/get_all_prodct")
+
+
+function getCustomerTags(callback){
 
       var Shopify = new shopifyAPI(config);
       
-     Shopify.get('/admin/customers/' + ID + '.json', function(err, data, headers){
+    Shopify.get('/admin/api/2021-01/products.json' + ID + '.json', function(err, data, headers){
        if(err){
          console.log(err);
          return;}
        else{
-        tags = data.customer.tags;
-        callback();}
+        products = data.products;
+           callback(products);}
       });
     }
-    function removeOneTimeTags() {
-      tagsObject = tags.split(",");
-     for(var i = tagsObject.length -1; i >= 0 ; i--){
-        if(tagsObject[i].includes("Wholesale-Accnt-Created")){
-          tagsObject.splice(i, 1);
-          tagsObject.push('Wholesale-Accnt-Appld');
-        }
-    } 
-    var put_data = {
-      "customer": {
-        "tags": "tags"
-      }
-    }
-    console.log('remove free shipping tag for customer ID ' + req.query.id);
-    put_data.customer.tags = tagsObject;
-    
-console.log(put_data);
-    var Shopify = new shopifyAPI(config);
+    function logProduct(products) {
+        console.log(products)
 
-    Shopify.put('/admin/customers/' + customerID + '.json',  put_data, function(err, data, headers){
-     });
+
     }
 
-    getCustomerTags(customerID,removeOneTimeTags);
+    getCustomerTags( logProduct);
  
     setTimeout(function() {
       redirectURL = 'https://rustic-house-dummy-store.myshopify.com/account';
