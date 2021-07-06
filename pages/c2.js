@@ -1,4 +1,4 @@
-//import fetch from 'isomorphic-unfetch'
+
 import Layout from '../components/MyLayout.js'
 import LayoutNoHeader from '../components/LayoutNoHeader.js'
 import axios from 'axios'
@@ -13,10 +13,7 @@ import CardBlank from '../components/CardBlank.js'
 //import dynamic from 'next/dynamic'
 import React from 'react'
 import Router from 'next/router'
-
-//import "../node_modules/iframe-resizer/js/iframeResizer.contentWindow.js"
 if (typeof window !== 'undefined') { require('../styles/materialize-src/js/bin/materialize.min.js'); }
-//if (typeof window !== 'undefined') { var Masonry = require('masonry-layout'); }
 import Masonry from 'react-masonry-css'
 //if (typeof window !== 'undefined') { var Imagesloaded = require('imagesloaded'); }
 
@@ -24,9 +21,7 @@ import Masonry from 'react-masonry-css'
 class Post extends React.Component {
 
     constructor(props) {
-        
         super(props);
-        console.log(props)
         this.state = { value: '', tos: '', customerExists: '', newCustomerID: '', images: '', allImages: '' };
         this.state.isToggleOn = false;
         this.state.active = false;
@@ -45,7 +40,7 @@ class Post extends React.Component {
          * Step 3 Conditional Rendering of different "views" based on props for different "customer" / user
          * 3 types New App User, Existing App User, Admin User
          */
-        if (this.props.customer == undefined) { //If you have not joined the program //Step 4 join program (hits node app on server)
+        if (this.props.customer == undefined) { //If you have not joined the program
             this.state.view = "JoinProgram"
             this.state.userType = "New"
         }
@@ -129,7 +124,7 @@ class Post extends React.Component {
         if (this.state.view === "ProfilePageView") {
             window.scrollTo(0, 0);
         }
-        if (document.querySelector('.grid') !== null) {
+      /*  if (document.querySelector('.grid') !== null) {
             Imagesloaded(document.querySelector('.container'), function (instance) {
                 console.log('all images are loaded');
                 // this.setState(state => ({timagesLoadedos: true}));
@@ -146,17 +141,15 @@ class Post extends React.Component {
                 });
                 console.log('Masonry Loaded');
             });
-        }
+        } */
         console.log("component did update");
         console.log(this.state.view)
 
     }
     handleJoinProgram() {
-        // Step 4 Join Program Hits node routerapp serverside with Shopify Api //Fix these need to be updated tolocalized URLs on rollout.
-        Router.push(`https://technologic.gq/users/addUser?id=${this.state.newCustomerID}`)
-    }//working
+        Router.push(`/redirect/${this.state.newCustomerID}`)
+    }
     handleAcceptTerms(event) {
-          // Step 5 Accept Terms
         event.preventDefault();
 
         var checkbox = document.getElementById("checkbox");
@@ -176,7 +169,7 @@ class Post extends React.Component {
                             'Well done, terms accepted: ',
                             response.data
                         );
-                        Router.push(`/c2?id=${data.props.customer.shopifyCustomerID}`)
+                        Router.push(`/c2/${data.props.customer.shopifyCustomerID}`)
                     })
                     .catch(error => {
                         // Handle error.
@@ -190,16 +183,16 @@ class Post extends React.Component {
         } else {
             alert("Please Accept the terms of service to conitnue");
         }
-    }//working
+    }
     handleEditProfile() {
         console.log("edit profile button pressed")
         this.setState(state => ({ view: "ProfilePageEdit" }));
-    }
+    }//working
     handleSaveProfile(event) {
         event.preventDefault();
         this.setState(state => ({ view: "ProfilePageView" }));
         this.handlePutProfile()
-    }
+    }//working
     handlePutProfile() {
         console.log('Profile was edited: ' + this.state.firstName + this.state.lastName + this.state.email + this.state.phone + this.state.businessName + this.state.defaultAddress + this.state.website + this.state.iGHandle);
         putChanges(this)
@@ -267,7 +260,7 @@ class Post extends React.Component {
                 });
 
         }
-    }
+    }//working
     handleSubmitImages(event) {
         event.preventDefault();
 
@@ -296,8 +289,8 @@ class Post extends React.Component {
                     data.setState(state => ({ modal: "close" }));
                     fd.append("refId", response.data.id);
 
-                    updateCurrentImages(response, data)
-                    postNewImages(fd, data)
+                   updateCurrentImages(response, data)
+                   postNewImages(fd, data)
                 })
                 .catch(error => {
                     // Handle error.
@@ -338,6 +331,7 @@ class Post extends React.Component {
             data.setState(state => ({ view: "SubmissionsPageView" }));
         }
         function postNewImages(fd, data) {
+            console.log('post new images')
             axios
                 .post(`https://api.technologic.gq/upload/`, fd)
                 .then(response => {
@@ -648,7 +642,7 @@ class Post extends React.Component {
 
     }
 
- 
+
     render() { //check if customer has enroled
         if (this.state.userType !== 'Admin') {
             switch (this.state.view) {
@@ -800,9 +794,9 @@ class Post extends React.Component {
                                         <GridItem>
                                             <CardBlank>
                                                 <div className="card-image">
-                                                    <img src="/static/baseline-add_photo_alternate-24px.png" className="responsive-img" />
+                                                    <img src="baseline-add_photo_alternate-24px.png" className="responsive-img" />
                                                     <span className="card-title special">Upload a New Image</span>
-                                                    <a className="btn-floating halfway-fab waves-effect waves-light red modal-trigger" href="#modal1" ><i className="material-icons">add</i></a>
+                                                    <a className="btn-floating halfway-fab waves-effect waves-light modal-trigger" href="#modal1" ><i className="material-icons">add</i></a>
                                                 </div>
                                                 <div className="card-content">
                                                 </div>
@@ -819,7 +813,7 @@ class Post extends React.Component {
                                                                 <img key={image.id}
                                                                     src={`https://api.technologic.gq/${image.upload.url}`}
                                                                     className="responsive-img" />
-                                                                <a className="btn-floating halfway-fab waves-effect waves-light red" valueid={image.id} onClick={this.handleDeleteImage}><i className="material-icons">delete</i></a>
+                                                                <a className="btn-floating halfway-fab waves-effect waves-light" valueid={image.id} onClick={this.handleDeleteImage}><i className="material-icons">delete</i></a>
                                                             </div>
                                                             <div className="card-content no-pad">
                                                                 <blockquote>
@@ -995,7 +989,7 @@ class Post extends React.Component {
                                                 <div className="card-image">
                                                     <img src="/static/baseline-add_photo_alternate-24px.png" className="responsive-img" />
                                                     <span className="card-title special">Upload a New Image</span>
-                                                    <a className="btn-floating halfway-fab waves-effect waves-light red modal-trigger" href="#modal1" ><i className="material-icons">add</i></a>
+                                                    <a className="btn-floating halfway-fab waves-effect waves-light modal-trigger" href="#modal1" ><i className="material-icons">add</i></a>
                                                 </div>
                                                 <div className="card-content">
                                                 </div>
@@ -1012,7 +1006,7 @@ class Post extends React.Component {
                                                                 <img key={image.id}
                                                                     src={`https://api.technologic.gq/${image.upload.url}`}
                                                                     className="responsive-img" />
-                                                                <a className="btn-floating halfway-fab waves-effect waves-light red" valueid={image.id} onClick={this.handleDeleteImage}><i className="material-icons">delete</i></a>
+                                                                <a className="btn-floating halfway-fab waves-effect waves-light" valueid={image.id} onClick={this.handleDeleteImage}><i className="material-icons">delete</i></a>
                                                             </div>
                                                             <div className="card-content no-pad">
                                                                 <blockquote>
@@ -1084,7 +1078,7 @@ class Post extends React.Component {
                                                 <div className="card-image">
                                                     <img src="/static/baseline-add_photo_alternate-24px.png" className="responsive-img" />
                                                     <span className="card-title special">Upload a New Image</span>
-                                                    <a className="btn-floating halfway-fab waves-effect waves-light red modal-trigger" href="#modal1" ><i className="material-icons">add</i></a>
+                                                    <a className="btn-floating halfway-fab waves-effect waves-light modal-trigger" href="#modal1" ><i className="material-icons">add</i></a>
                                                 </div>
                                                 <div className="card-content">
                                                 </div>
@@ -1180,11 +1174,7 @@ export async function getServerSideProps(context) {
     const { id } = context.query // Step 2 check this is customer ID passed from Shopify,or pass newcustomerid prop to constructor
     const res = await fetch(`https://api.technologic.gq/shopifyUsers/?shopifyCustomerID=${id}`) //Attempts to fetch existing ID in Strapi
     const data = await res.json()
-    if (!data) {// Next 11 catch no data
-        return {
-            notFound: true,
-        }
-    }
+
     //Helper functions
     function fisherYates(myArray) {
         var i = myArray.length;
@@ -1203,6 +1193,7 @@ export async function getServerSideProps(context) {
 
         })
     }
+
     //End Helper functions
 
     // Conditional Returns for constructor see contstructor above next
@@ -1226,10 +1217,10 @@ export async function getServerSideProps(context) {
                 var data2 = await Promise.all(promises)
 
                 return {
-                    props:{
-                        customer: data[0],
-                        images: data2,
-                        imagesAll: data3
+                    props: {
+                    customer: data[0],
+                    images: data2,
+                    imagesAll: data3
                     }
                     
                 }
@@ -1246,7 +1237,7 @@ export async function getServerSideProps(context) {
                         images: data2,
                         imagesAll: data3
                     }
-       
+                    
                 }
             }
 
@@ -1269,7 +1260,7 @@ export async function getServerSideProps(context) {
                         customer: data[0],
                         images: data2
                     }
-                    
+                   
                 }
 
 
@@ -1280,7 +1271,7 @@ export async function getServerSideProps(context) {
                     props:{
                         customer: data[0],
                     }
-                   
+                    
                 }
             }
         }

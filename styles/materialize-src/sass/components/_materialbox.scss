@@ -1,0 +1,68 @@
+.materialboxed {
+  &:hover {
+    &:not(.active) {
+      opacity: .8;
+    }
+  }
+
+  display: block;
+  cursor: zoom-in;
+  position: relative;
+  transition: opacity .4s;
+  -webkit-backface-visibility: hidden;
+
+  &.active {
+    cursor: zoom-out;
+    &.card-image{
+      background-color:unset;
+    
+    }
+  }
+
+}
+
+#materialbox-overlay {
+  position:fixed;
+  top: 0;
+  right: 0;
+  bottom: 0;
+  left: 0;
+  background-color: rgba(0,0,0,.95);
+  z-index: 1000;
+  
+  will-change: opacity;
+}
+
+.materialbox-caption {
+  position: fixed;
+  text-transform: capitalize;
+  display: inline-block;
+  color:#000000;
+  line-height: 1.5em;
+  bottom: 0;
+  left: 0;
+  background-color: rgba(255,255,255,.85);
+  text-align: left;
+  padding: 0% 1%;
+  margin: 0 2vw;
+  bottom: 10vh;
+  z-index: 1000;
+  font-size: 1.2em;
+  -webkit-font-smoothing: antialiased;
+}
+.materialbox-caption-2 {
+  position: fixed;
+  text-transform: capitalize;
+  display: inline-block;
+  color:#000000;
+  line-height: 1.5em;
+  bottom: 0;
+  left: 0;
+  background-color: rgba(255,255,255,.85);
+  text-align: left;
+  padding: 0% 1%;
+  bottom: 8vh;
+  z-index: 1000;
+  font-size: 1.2em;
+  -webkit-font-smoothing: antialiased;
+}
