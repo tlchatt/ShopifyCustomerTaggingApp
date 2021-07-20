@@ -8,7 +8,7 @@ import OutputField from '../components/OutputField.js'
 import InputField from '../components/InputField.js'
 import Card from '../components/Card.js'
 import CardBlank from '../components/CardBlank.js'
-
+import { getToken, fisherYates } from '../lib/api'
 //import Link from 'next/link'
 //import dynamic from 'next/dynamic'
 import React from 'react'
@@ -34,9 +34,10 @@ class Post extends React.Component {
         this.state.uploading = false;
         this.state.images = props.images
         this.state.imagesAll = props.imagesAll
+        this.state.tos = props.customer.AcceptedTermsGeneralBoolean;
+        this.state.customerExists = props.customer;
+        this.state.token = props.token
         //this.state = { checked:'check_box_outline_blank'}
-
-
         if (this.state.images == undefined) {
             this.state.images = ''
         }
@@ -49,40 +50,39 @@ class Post extends React.Component {
             this.state.view = "JoinProgram"
             this.state.userType = "New"
         }
-        else {
-            this.state.tos = props.customer.AcceptedTermsGeneral;
-            this.state.customerExists = props.customer;
-            if (this.props.customer.admin !== false) { //If your admin status is not false
+        if (this.state.tos == true) {   // if customer is defined have they accepted terms.
+            if (this.props.customer.admin == true) { //Admin or regular user
                 this.state.userType = "Admin"
                 this.state.view = "ProfilePageView"
             }
             else {
-                if (this.state.tos !== false) { // If your terms of service status has been accepted
-                    this.state.userType = "User"
-                    this.state.view = "ProfilePageView"
-                }
-                else {
-                    this.state.view = "AcceptTerms"
-                }
-            }
+            // If your terms of service status has been accepted
+                this.state.userType = "User"
+                this.state.view = "ProfilePageView"
+            }                  
         }
-        console.log(this.state.userType)
-        console.log(this.state.view)
+        else { // has not accepted terms.
+            this.state.userType = "UserNeedsAcceptTOS"
+            this.state.view = "AcceptTerms"
+        }
+        console.log('User Type : ' +  this.state.userType)
+        console.log('Current View :' + this.state.view)
         //user view states
         // This binding is necessary to make `this` work in the callback
-        this.handlePutProfile = this.handlePutProfile.bind(this);
+       // this.handlePutProfile = this.handlePutProfile.bind(this);
         this.handleSubmitImages = this.handleSubmitImages.bind(this);
         this.handleChange = this.handleChange.bind(this);
         this.handleAcceptTerms = this.handleAcceptTerms.bind(this);
         this.handleJoinProgram = this.handleJoinProgram.bind(this);
         this.handleTab = this.handleTab.bind(this);
         this.handleDeleteImage = this.handleDeleteImage.bind(this);
-        this.handleEditProfile = this.handleEditProfile.bind(this);
+        this.handleEditProfileView = this.handleEditProfileView.bind(this);
         this.handleSaveProfile = this.handleSaveProfile.bind(this);
         this.closeModal = this.closeModal.bind(this);
         this.closeModal2 = this.closeModal2.bind(this);
         this.handleApproveAdmin = this.handleApproveAdmin.bind(this);
         this.handleEditImage = this.handleEditImage.bind(this);
+        this.getToken = getToken()
         //console.log(this.state)
         // console.log(this.props)
     }
@@ -97,9 +97,9 @@ class Post extends React.Component {
 
         let elem = document.querySelector('.tabs')
         M.Tabs.init(elem, {})
-
-        console.log(this.state.imagesAll)
+        
         if (this.state.imagesAll !== undefined) {
+            console.log(this.state.imagesAll)
             this.state.imagesAll.forEach((picture) => {
                 const img = new Image();
                 if (picture.upload !== undefined) {
@@ -129,7 +129,7 @@ class Post extends React.Component {
         if (this.state.view === "ProfilePageView") {
             window.scrollTo(0, 0);
         }
-        if (document.querySelector('.grid') !== null) {
+       /* repalce masonry grid if (document.querySelector('.grid') !== null) {
             Imagesloaded(document.querySelector('.container'), function (instance) {
                 console.log('all images are loaded');
                 // this.setState(state => ({timagesLoadedos: true}));
@@ -146,144 +146,151 @@ class Post extends React.Component {
                 });
                 console.log('Masonry Loaded');
             });
-        }
-        console.log("component did update");
-        console.log(this.state.view)
+        } */
+        console.log(" -- component did update -- view : " + this.state.view );
+   
 
     }
-    handleJoinProgram() {
+     handleJoinProgram() { //curently handled by redirect to node app with Shopify API Scripts
         // Step 4 Join Program Hits node routerapp serverside with Shopify Api //Fix these need to be updated tolocalized URLs on rollout.
         Router.push(`https://technologic.gq/users/addUser?id=${this.state.newCustomerID}`)
     }//working
-    handleAcceptTerms(event) {
+    async handleAcceptTerms(event) {
           // Step 5 Accept Terms
         event.preventDefault();
-
         var checkbox = document.getElementById("checkbox");
-        if (checkbox.checked) {
-            putAccept(this)
+        if (checkbox.checked) {    
+            let headers = this.state.token
+            var response = await putAccept(this, headers)
+            console.log(response)
+        }
+        else {
+            alert("Please Accept the terms of service to conitnue");
+        }
 
-
-            function putAccept(data) {
-                axios
-                    .put(`https://api.technologic.gq/shopifyUsers/${data.props.customer.id}`,
-                        {
-                            AcceptedTermsGeneral: true
-                        })
+            async function putAccept(acceptData, headers){
+                var data = {
+                    AcceptedTermsGeneralBoolean: true
+                }
+              let response = await  axios.put(`${process.env.NEXT_PUBLIC_API_URL}/shopifyUsers/${acceptData.props.customer.id}`, data, { headers })
                     .then(response => {
                         // Handle success.
-                        console.log(
-                            'Well done, terms accepted: ',
-                            response.data
-                        );
-                        Router.push(`/c2?id=${data.props.customer.shopifyCustomerID}`)
+                        return (response.data)
+                        //Router.push(`?id=${acceptData.props.customer.shopifyCustomerID}`)
                     })
                     .catch(error => {
                         // Handle error.
-                        console.log('An error occurred:', error);
+                        console.log(response);
+                        return (error);
                     });
+
+                return (response)
             }
 
-
-            console.log('put data and state change to data complete')
-
-        } else {
-            alert("Please Accept the terms of service to conitnue");
-        }
-    }//working
-    handleEditProfile() {
+    }//working 
+    handleEditProfileView() {
         console.log("edit profile button pressed")
         this.setState(state => ({ view: "ProfilePageEdit" }));
-    }
-    handleSaveProfile(event) {
+    }// working
+    async handleSaveProfile(event) {
         event.preventDefault();
-        this.setState(state => ({ view: "ProfilePageView" }));
-        this.handlePutProfile()
-    }
-    handlePutProfile() {
-        console.log('Profile was edited: ' + this.state.firstName + this.state.lastName + this.state.email + this.state.phone + this.state.businessName + this.state.defaultAddress + this.state.website + this.state.iGHandle);
-        putChanges(this)
-        function putChanges(data) {
-            //change this to not edit props according to react docs
-            // Whether you declare a component as a function or a class, it must never modify its own props. Consider this sum function:
-            //https://reactjs.org/docs/components-and-props.html
-            //Also make this find only what is changed( clean it up)
-            if (data.state.firstName) {
-                console.log(`first name change detected ${data.state.firstName}`)
-                data.props.customer.firstName = data.state.firstName
-            }
-            if (data.state.lastName) {
-                console.log(`first name change detected ${data.state.lastName}`)
-                data.props.customer.lastName = data.state.lastName
-            }
-            if (data.state.email) {
-                console.log(`first name change detected ${data.state.email}`)
-                data.props.customer.email = data.state.email
-            }
-            if (data.state.phone) {
-                console.log(`first name change detected ${data.state.phone}`)
-                data.props.customer.phone = data.state.phone
-            }
-            if (data.state.businessName) {
-                console.log(`business name change detected ${data.state.businessName}`)
-                data.props.customer.businessName = data.state.businessName
-            }
-            if (data.state.defaultAddress) {
-                console.log(`default  change Address detected ${data.state.defaultAddress}`)
-                data.props.customer.defaultAddress = data.state.defaultAddress
-            }
-            if (data.state.website) {
-                console.log(`website change detected ${data.state.website}`)
-                data.props.customer.website = data.state.website
-            }
-            if (data.state.iGHandle) {
-                console.log(`igHandle change detected ${data.state.iGHandle}`)
-                data.props.customer.iGHandle = data.state.iGHandle
-            }
-            axios
-                .put(`https://api.technologic.gq/shopifyUsers/${data.props.customer.id}`,
-
-                    {
-
-                        firstName: data.props.customer.firstName,
-                        lastName: data.props.customer.lastName,
-                        email: data.props.customer.email,
-                        phone: data.props.customer.phone,
-                        businessName: data.props.customer.businessName,
-                        defaultAddress: data.props.customer.defaultAddress,
-                        website: data.props.customer.website,
-                        iGHandle: data.props.customer.iGHandle
+        console.log(this)
+        let currentState = this.state
+        let currentProps = this.props
+        let headers = this.state.token
+      
+        let response = await handlePutProfile(currentState, currentProps, headers)
+        async function handlePutProfile(currentState, currentProps,headers) {
+          
+           
+                let id = currentProps.customer.id
+                //change this to not edit props according to react docs
+                // Whether you declare a component as a function or a class, it must never modify its own props. Consider this sum function:
+                //https://reactjs.org/docs/components-and-props.html
+                //Also make this find only what is changed( clean it up)
+                if (currentState.firstName) {
+                    console.log(`first name change detected ${currentState.firstName}`)
+                    currentProps.customer.firstName = currentState.firstName
+                }
+                if (currentState.lastName) {
+                    console.log(`first name change detected ${currentState.lastName}`)
+                    currentProps.customer.lastName = currentState.lastName
+                }
+                if (currentState.email) {
+                    console.log(`first name change detected ${currentState.email}`)
+                    currentProps.customer.email = currentState.email
+                }
+                if (currentState.phone) {
+                    console.log(`first name change detected ${currentState.phone}`)
+                    currentProps.customer.phone = currentState.phone
+                }
+                if (currentState.businessName) {
+                    console.log(`business name change detected ${currentState.businessName}`)
+                    currentProps.customer.businessName = currentState.businessName
+                }
+                if (currentState.defaultAddress) {
+                    console.log(`default  change Address detected ${currentState.defaultAddress}`)
+                    currentProps.customer.defaultAddress = currentState.defaultAddress
+                }
+                if (currentState.website) {
+                    console.log(`website change detected ${currentState.website}`)
+                    currentProps.customer.website = currentState.website
+                }
+                if (currentState.iGHandle) {
+                    console.log(`igHandle change detected ${currentState.iGHandle}`)
+                    currentProps.customer.iGHandle = currentState.iGHandle
+                }
+                let data = {
+                    firstName: currentProps.customer.firstName,
+                    lastName: currentProps.customer.lastName,
+                    email: currentProps.customer.email,
+                    phone: currentProps.customer.phone,
+                    businessName: currentProps.customer.businessName,
+                    defaultAddress: currentProps.customer.defaultAddress,
+                    website: currentProps.customer.website,
+                    iGHandle: currentProps.customer.iGHandle
+                }
+                console.log(data)
+                let response = await axios
+                    .put(`${process.env.NEXT_PUBLIC_API_URL}/shopifyUsers/${id}`, data, { headers })
+                    .then(response => {
+                        // Handle success.
+                        return (response)
+                        console.log(
+                            'Well done, your post has been successfully created: ',
+                            response.data
+                        );
                     })
-                .then(response => {
-                    // Handle success.
-                    console.log(
-                        'Well done, your post has been successfully created: ',
-                        response.data
-                    );
-                })
-                .catch(error => {
-                    // Handle error.
-                    console.log('An error occurred:', error);
-                });
-
+                    .catch(error => {
+                        // Handle error.
+                        return (error)
+                        console.log('An error occurred:', error);
+                    });
+                return (response)
+            
         }
-    }
+        console.log(response)
+        this.setState(state => ({ view: "ProfilePageView" }));
+    } // working
     handleSubmitImages(event) {
         event.preventDefault();
-
         const formElement = document.querySelector('form');
         const fd = new FormData(formElement)
-
+        console.log(formElement)
+        
 
         creatNewImageSubmission(this)
-        function creatNewImageSubmission(data) {
-            axios
-                .post(`https://api.technologic.gq/imagesubmissions/`,
-                    {
-                        shopifyUser: data.props.customer.id,
-                        photographer: data.state.photographer,
-                        description: data.state.description
-                    })
+        function creatNewImageSubmission(submissionData) {
+            console.log(submissionData)
+           let data = {
+                shopifyuser: submissionData.props.customer.id,
+                photographer: submissionData.state.photographer,
+                description: submissionData.state.description
+                }
+            console.log(data)
+            let headers = submissionData.state.token
+            
+            axios.post(`${process.env.NEXT_PUBLIC_API_URL}/imagesubmissions/`, data, { headers })
                 .then(response => {
                     // Handle success.
                     console.log(
@@ -291,55 +298,64 @@ class Post extends React.Component {
                         response.data
                     );
                     //clear form and pass id of new imagesubmission entry (not the actual image upload) to the image upload post function as refid
-                    document.querySelector('form').reset();
-                    data.setState(state => ({ files: "" }));
-                    data.setState(state => ({ modal: "close" }));
-                    fd.append("refId", response.data.id);
 
-                    updateCurrentImages(response, data)
-                    postNewImages(fd, data)
+                    console.log('set state files blank')
+                    submissionData.setState(state => ({ files: "" }));
+                    console.log('set state modal close')
+                    submissionData.setState(state => ({ modal: "close" }));
+                    console.log('append ref id to response.data')
+                    console.log(response.data.id)
+                    fd.append("refId", response.data.id);
+                    console.log(formElement)
+                    console.log('post New Images')
+                    postNewImages(fd, submissionData)
+                    console.log('update current Images')
+                    updateCurrentImages(response, submissionData)
+                 
                 })
                 .catch(error => {
                     // Handle error.
                     console.log('An error occurred:', error);
                 });
-        }
-        function updateCurrentImages(response, data) {
+        }// working
+        function updateCurrentImages(response, submissionData) {//this brings submited image into live state.console.log
             //update image array but gets URL from update Current Images after postNewImages
-            if (data.state.images !== undefined) {
-                data.setState(previousState => ({
+            if (submissionData.state.images !== undefined) {
+                submissionData.setState(previousState => ({
                     images: [...previousState.images, {
                         id: response.data.id,
                         description: response.data.description,
                         photographer: response.data.photographer,
                         upload: {
                             //some filler would like to actually get this to be a filler image but the path to desired filler image did not work /static/baseline-add_photo_alternate-24px.png
-                            url: 'baseline-add_photo_alternate-24px.png'
+                            url: '/baseline-add_photo_alternate-24px.png'
                         },
                     }]
                 }));
-                console.log(data.props.images)
+                console.log(submissionData.props.images)
             }
             else {
-                data.setState(previousState => ({
+                submissionData.setState(previousState => ({
                     images: [...previousState.images, {
                         id: response.data.id,
                         description: response.data.description,
                         photographer: response.data.photographer,
                         upload: {
                             //some filler would like to actually get this to be a filler image but the path to desired filler image did not work /static/baseline-add_photo_alternate-24px.png
-                            url: 'baseline-add_photo_alternate-24px.png'
+                            url: '/baseline-add_photo_alternate-24px.png'
                         },
                     }]
                 }));
                 console.log('fix this show first image')
             }
 
-            data.setState(state => ({ view: "SubmissionsPageView" }));
+            submissionData.setState(state => ({ view: "SubmissionsPageView" }));
         }
-        function postNewImages(fd, data) {
+        function postNewImages(fd, submissionData) {
+            let headers = submissionData.state.token
+            console.log(formElement)
             axios
-                .post(`https://api.technologic.gq/upload/`, fd)
+                .post(`https://api.technologic.gq/upload/`, fd,{headers})
                 .then(response => {
                     // Handle success.
                     console.log(
@@ -347,7 +363,7 @@ class Post extends React.Component {
                         response.data
                     );
                     //ads url to image props. 
-                    updateCurrentImage(response, data)
+                    updateCurrentImage(response, submissionData)
 
                 })
                 .catch(error => {
@@ -355,23 +371,26 @@ class Post extends React.Component {
                     console.log('An error occurred:', error);
                 });
         }
-        function updateCurrentImage(response, data) {
+        function updateCurrentImage(response, submissionData) {
+        
+            console.log(submissionData)
             //append url to image which was added to this.state.images earlier.
-            if (data.state.images !== undefined) {
-                var length = data.state.images.length - 1
-                //console.log(response.data[0].url)
-
-                data.state.images[length].upload.url = response.data[0].url
-                console.log(data.state.images)
+            if (submissionData.state.images !== undefined) {
+                console.log('not undefined')
+                var length = submissionData.state.images.length - 1
+                console.log(response.data[0].url)
+          
+                submissionData.state.images[length].upload.url = response.data[0].url
+                console.log(submissionData.state.images)
 
             }
 
 
-            data.setState(state => ({ view: "SubmissionsPageView" }));
+            submissionData.setState(state => ({ view: "SubmissionsPageView" }));
 
         }
         //can we get this to use the class function
-    }
+    }// working
     handleEditImage(event) {
         event.preventDefault();
         //get current image data and put new data on imageSubmissionObject
@@ -592,33 +611,19 @@ class Post extends React.Component {
             this.setState(state => ({ modal: "open" }));
         }
         if (name === 'description') {
-
-
             this.setState(state => ({ modal: "open" }));
         }
-
         if (name === 'photographer') {
-
-
             this.setState(state => ({ modal: "open" }));
         }
         if (name === 'checkbox') {
-
-
-
         }
-
-
-
         else {
-
             this.setState({
                 [name]: value
             });
-
-
         }
-        console.log(' handle change state ')
+        console.log(' handle change state : State Following')
         console.log(this.state)
     }
     handleTab(event) {
@@ -729,7 +734,7 @@ class Post extends React.Component {
                                     <Row>
                                         <Col124>
                                             <div className="s10 output-field">
-                                                <button className="waves-effect waves-light btn btn-large .special-button" onClick={this.handleEditProfile}> Edit Info<i className="material-icons left">edit</i>
+                                                <button className="waves-effect waves-light btn btn-large .special-button" onClick={this.handleEditProfileView}> Edit Info<i className="material-icons left">edit</i>
                                                 </button>
                                             </div>
                                         </Col124>
@@ -800,7 +805,7 @@ class Post extends React.Component {
                                         <GridItem>
                                             <CardBlank>
                                                 <div className="card-image">
-                                                    <img src="/static/baseline-add_photo_alternate-24px.png" className="responsive-img" />
+                                                    <img src="/baseline-add_photo_alternate-24px.png" className="responsive-img" />
                                                     <span className="card-title special">Upload a New Image</span>
                                                     <a className="btn-floating halfway-fab waves-effect waves-light red modal-trigger" href="#modal1" ><i className="material-icons">add</i></a>
                                                 </div>
@@ -816,8 +821,9 @@ class Post extends React.Component {
                                                     <GridItem>
                                                         <CardBlank>
                                                             <div className="card-image">
+                                                               
                                                                 <img key={image.id}
-                                                                    src={`https://api.technologic.gq/${image.upload.url}`}
+                                                                    src={`${process.env.NEXT_PUBLIC_API_URL}${image.upload.url}`}
                                                                     className="responsive-img" />
                                                                 <a className="btn-floating halfway-fab waves-effect waves-light red" valueid={image.id} onClick={this.handleDeleteImage}><i className="material-icons">delete</i></a>
                                                             </div>
@@ -923,7 +929,7 @@ class Post extends React.Component {
                                     <Row>
                                         <Col124>
                                             <div className="s10 output-field">
-                                                <button className="waves-effect waves-light btn btn-large .special-button" onClick={this.handleEditProfile}> Edit Info<i className="material-icons left">edit</i>
+                                                <button className="waves-effect waves-light btn btn-large .special-button" onClick={this.handleEditProfileView}> Edit Info<i className="material-icons left">edit</i>
                                                 </button>
                                             </div>
                                         </Col124>
@@ -993,7 +999,7 @@ class Post extends React.Component {
                                         <GridItem>
                                             <CardBlank>
                                                 <div className="card-image">
-                                                    <img src="/static/baseline-add_photo_alternate-24px.png" className="responsive-img" />
+                                                    <img src="/baseline-add_photo_alternate-24px.png" className="responsive-img" />
                                                     <span className="card-title special">Upload a New Image</span>
                                                     <a className="btn-floating halfway-fab waves-effect waves-light red modal-trigger" href="#modal1" ><i className="material-icons">add</i></a>
                                                 </div>
@@ -1010,7 +1016,7 @@ class Post extends React.Component {
                                                         <CardBlank>
                                                             <div className="card-image">
                                                                 <img key={image.id}
-                                                                    src={`https://api.technologic.gq/${image.upload.url}`}
+                                                                    src={`${process.env.NEXT_PUBLIC_API_URL}${image.upload.url}`}
                                                                     className="responsive-img" />
                                                                 <a className="btn-floating halfway-fab waves-effect waves-light red" valueid={image.id} onClick={this.handleDeleteImage}><i className="material-icons">delete</i></a>
                                                             </div>
@@ -1082,7 +1088,7 @@ class Post extends React.Component {
                                         <GridItem>
                                             <CardBlank>
                                                 <div className="card-image">
-                                                    <img src="/static/baseline-add_photo_alternate-24px.png" className="responsive-img" />
+                                                    <img src="/baseline-add_photo_alternate-24px.png" className="responsive-img" />
                                                     <span className="card-title special">Upload a New Image</span>
                                                     <a className="btn-floating halfway-fab waves-effect waves-light red modal-trigger" href="#modal1" ><i className="material-icons">add</i></a>
                                                 </div>
@@ -1098,7 +1104,7 @@ class Post extends React.Component {
                                                         <CardBlank>
                                                             <div className="card-image">
                                                                 <img key={image.id}
-                                                                    src={`https://api.technologic.gq/${image.upload.url}`}
+                                                                    src={`${process.env.NEXT_PUBLIC_API_URL}${image.upload.url}`}
                                                                     className="responsive-img" />
                                                                 <a className="" valueid={image.id} valueapproved={image.Approved ? 1 : 0} onClick={this.handleApproveAdmin}>
                                                                     <i className="material-icons icons_special">
@@ -1134,7 +1140,7 @@ class Post extends React.Component {
                                                                         <Row>
                                                                             <Col1210>
                                                                                 <img key={image.id}
-                                                                                    src={`https://api.technologic.gq/${image.upload.url}`}
+                                                                                    src={`${process.env.NEXT_PUBLIC_API_URL}${image.upload.url}`}
                                                                                     className="responsive-img notToTall" />
                                                                             </Col1210>
 
@@ -1172,12 +1178,14 @@ class Post extends React.Component {
     }   //end of render 
 } //end of class
 export async function getServerSideProps(context) {
+    var token = await getToken()
     //console.log(context)
     //const params =context.params
     // console.log(`Context.params: ${title}`)
     // console.log(`Context.query: ${id}`)
     console.log('fetching props')
     const { id } = context.query // Step 2 check this is customer ID passed from Shopify,or pass newcustomerid prop to constructor
+    console.log(id)
     const res = await fetch(`https://api.technologic.gq/shopifyUsers/?shopifyCustomerID=${id}`) //Attempts to fetch existing ID in Strapi
     const data = await res.json()
     if (!data) {// Next 11 catch no data
@@ -1185,30 +1193,10 @@ export async function getServerSideProps(context) {
             notFound: true,
         }
     }
-    //Helper functions
-    function fisherYates(myArray) {
-        var i = myArray.length;
-        if (i == 0) return false;
-        while (--i) {
-            var j = Math.floor(Math.random() * (i + 1));
-            var tempi = myArray[i];
-            var tempj = myArray[j];
-            myArray[i] = tempj;
-            myArray[j] = tempi;
-        }
-    }
-    function replaceFolder(myArray) {
-        myArray.forEach(function (myArrayItem) {
-            myArrayItem.upload.url = myArrayItem.upload.url.replace("/uploads/", "/uploads/optimized/")
-
-        })
-    }
-    //End Helper functions
-
     // Conditional Returns for constructor see contstructor above next
     if (data[0] !== undefined) { //has account in Strapi allready
         console.log("not customer true in props")
-        if (data[0].admin !== false) { //administrator
+        if (data[0].admin == true) { //administrator
             console.log("admin test true in props")
             //return all images if admin
             const res3 = await fetch(`https://api.technologic.gq/imageSubmissions/`)
@@ -1229,7 +1217,8 @@ export async function getServerSideProps(context) {
                     props:{
                         customer: data[0],
                         images: data2,
-                        imagesAll: data3
+                        imagesAll: data3,
+                        token: token
                     }
                     
                 }
@@ -1244,7 +1233,8 @@ export async function getServerSideProps(context) {
                     props:{
                         customer: data[0],
                         images: data2,
-                        imagesAll: data3
+                        imagesAll: data3,
+                        token: token
                     }
        
                 }
@@ -1267,20 +1257,18 @@ export async function getServerSideProps(context) {
                 return {
                     props:{
                         customer: data[0],
-                        images: data2
+                        images: data2,
+                        token: token
                     }
-                    
                 }
-
-
             }
             else { //customer with no image submissions
                 //must test custoemr with no image submissions
                 return {
                     props:{
                         customer: data[0],
-                    }
-                   
+                        token: token
+                    }                  
                 }
             }
         }
@@ -1288,7 +1276,8 @@ export async function getServerSideProps(context) {
     else { // No account in strapi create new account. 
         return {
             props:{
-                newcustomerid: id
+                newcustomerid: id,
+                token: token
             }
            
         }

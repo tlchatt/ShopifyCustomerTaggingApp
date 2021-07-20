@@ -147,7 +147,8 @@ class Post extends React.Component {
 
     }
     handleJoinProgram() {
-        Router.push(`/redirect/${this.state.newCustomerID}`)
+        Router.push(`http://technologic.gq/redirect/${this.state.newCustomerID}`)
+        
     }
     handleAcceptTerms(event) {
         event.preventDefault();
@@ -159,7 +160,7 @@ class Post extends React.Component {
 
             function putAccept(data) {
                 axios
-                    .put(`https://api.technologic.gq/shopifyUsers/${data.props.customer.id}`,
+                    .put(`http://technologic.gq:3001/shopifyUsers/${data.props.customer.id}`,
                         {
                             AcceptedTermsGeneral: true
                         })
