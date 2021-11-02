@@ -14,13 +14,14 @@
   var non = nonce();
   const forwardingAddress = "https://strapi.ngrok.io";
   const shopName = 'straydogdesigns.myshopify.com';
+
   const config ={
     shop: shopName, // MYSHOP.myshopify.com
-    shopify_api_key: process.env.SHOPIFY_API_KEY2, // Your API key
-    shopify_shared_secret: process.env.SHOPIFY_API_SECRET2, // Your Shared Secret
-    access_token: process.env.SHOPIFY_API_TOKEN2, //permanent token
-    verbose: false
+    shopify_api_key: process.env.SHOPIFY_API_KEY, // Your API key
+    shopify_shared_secret: process.env.SHOPIFY_API_SECRET, // Your Shared Secret
+    access_token: process.env.SHOPIFY_API_TOKEN, //permanent token
   }
+
   router.use(bodyParser.json());
   router.use(bodyParser.urlencoded({
     extended: true,
