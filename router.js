@@ -1,5 +1,8 @@
 var express = require('express')
   , app = express()
+var cors = require('cors')
+
+app.use(cors())
 
 app.use(require('./controllers'))
 
