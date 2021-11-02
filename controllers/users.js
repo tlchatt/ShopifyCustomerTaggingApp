@@ -187,4 +187,75 @@
     }
   
 })
+router.post('/updateTags', (req, res) => {
+
+  var tags = undefined;
+  query_params = req.query.id;
+  console.log('/updateTags route customer id ' + query_params)
+  var customerID = req.query.id;
+  function getCustomerTags(ID) {
+    var Shopify = new shopifyAPI(config);
+    Shopify.get('/admin/customers/' + ID + '.json', function (err, data, headers) {
+      if (err) {
+        console.log(err);
+        return;
+      }
+      else {
+        tags = data.customer.tags;
+        replaceTags();
+      }
+    });
+  }
+
+  function replaceTags() {
+    tagsObject = tags.split(",");
+    for (var i = tagsObject.length - 1; i >= 0; i--) {
+      if (tagsObject[i].includes("Wholesale-Accnt-Created")) {
+        tagsObject.splice(i, 1);
+        tagsObject.push('Wholesale-Accnt-Appld');
+      }
+    }
+    var put_data = {
+      "customer": {
+        "tags": null
+      }
+    }
+    put_data.customer.tags = tagsObject;
+
+
+    var Shopify = new shopifyAPI(config);
+
+    Shopify.put('/admin/customers/' + customerID + '.json', put_data, function (err, data, headers) {
+
+      if (data) {
+        console.log('put /admin/customers/  success')
+        let externalCustomer = {
+          shopifyCustomerID: data.customer.id,
+          firstName: data.customer.first_name,
+          lastName: data.customer.last_name,
+          email: data.customer.email,
+          phone: data.customer.phone,
+          defaultAddress: data.customer.defaultAddress,
+          tags: data.customer.tags
+        };
+        postReply(data)
+      }
+      if (err) {
+        console.log('put /admin/customres/ err')
+        // res.status(500).send('Shopify get /admin/customers/ ' + query_params + ' Failed ' + err)
+        // return res.json({ msg: 'shopify API failed' })
+        postReply(err)
+      }
+
+
+    });
+  }
+  function postReply(reply) {
+    return res.json({ reply: reply, status:true })
+
+  }
+
+  getCustomerTags(customerID);
+
+})
   module.exports = router
